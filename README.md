@@ -18,6 +18,7 @@ The application integrates with The Movie Database (TMDB) API to display popular
 - Remove movies from favourites
 - Contact page
 - Responsive Bootstrap layout
+- Custom SCSS styling improvements
 
 ---
 
@@ -27,6 +28,7 @@ The application integrates with The Movie Database (TMDB) API to display popular
 - Laravel 13
 - SQLite
 - Bootstrap 5
+- SCSS/SASS
 - TMDB API
 - Node.js
 - Vite
@@ -310,6 +312,21 @@ Password:
 
 ---
 
+# Database Dump
+
+This project uses SQLite.
+
+The database structure can be recreated using:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+The default user is created through the database seeder.
+
+---
+
 # Project Structure
 
 - `MovieController` handles movie listing logic
@@ -317,6 +334,20 @@ Password:
 - `TmdbService` handles TMDB API communication
 - Blade templates used for frontend rendering
 - SQLite used for lightweight local database setup
+
+---
+
+# Rationale / Approach
+
+I chose Laravel because the assessment required PHP/Python/NodeJS, and Laravel provides a clean MVC structure, built-in authentication, routing, database migrations, Eloquent ORM, and a reliable HTTP client for consuming the TMDB API.
+
+I separated the TMDB API logic into a `TmdbService` class instead of placing all API logic directly inside the controller. This keeps the controller cleaner and makes the code easier to maintain and extend.
+
+SQLite was used because it keeps the project lightweight and easy to run locally without requiring MySQL setup. The database can be recreated using Laravel migrations and seeders.
+
+Laravel Breeze was used for authentication because the brief required a default user login and favourites functionality after authentication. Breeze provides a simple, reliable authentication foundation.
+
+Bootstrap and SCSS were used for the frontend layout so the interface remains responsive, clean, and easy to review.
 
 ---
 
@@ -347,6 +378,9 @@ A dedicated `TmdbService` class was used to separate external API communication 
 - Duplicate favourite prevention
 - Dynamic favourite button state
 - Responsive navigation bar
+- SCSS-based UI improvements
+- Hover animations and improved card styling
+- Improved navigation UX
 
 ---
 
