@@ -38,12 +38,16 @@
 
 <div class="container py-5">
 
-    <h1 class="mb-4 text-center">Popular Movies</h1>
+    <h1 class="mb-4 text-center">
+        {{ $query ? 'Search Results' : 'Popular Movies' }}
+    </h1>
 
-    <div class="mb-4 position-relative">
+    <form action="{{ route('movies.index') }}" method="GET" class="mb-4 position-relative">
         <input
             type="text"
             id="movie-search"
+            name="query"
+            value="{{ $query ?? '' }}"
             class="form-control"
             placeholder="Search for movies..."
             autocomplete="off"
@@ -54,7 +58,15 @@
             class="list-group position-absolute w-100"
             style="z-index: 1000;"
         ></div>
-    </div>
+    </form>
+
+    @if(!empty($query))
+        <div class="mb-4 text-center">
+            <a href="{{ route('movies.index') }}" class="btn btn-secondary">
+                Back to Popular Movies
+            </a>
+        </div>
+    @endif
 
     @if(session('success'))
         <div class="alert alert-success text-center">
@@ -127,19 +139,21 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-center mt-4">
-        @if($page > 1)
-            <a href="{{ route('movies.index', ['page' => $page - 1]) }}" class="btn btn-primary me-2">
-                Previous
-            </a>
-        @endif
+    @if(empty($query))
+        <div class="d-flex justify-content-center mt-4">
+            @if($page > 1)
+                <a href="{{ route('movies.index', ['page' => $page - 1]) }}" class="btn btn-primary me-2">
+                    Previous
+                </a>
+            @endif
 
-        @if($page < 5)
-            <a href="{{ route('movies.index', ['page' => $page + 1]) }}" class="btn btn-primary">
-                Next
-            </a>
-        @endif
-    </div>
+            @if($page < 5)
+                <a href="{{ route('movies.index', ['page' => $page + 1]) }}" class="btn btn-primary">
+                    Next
+                </a>
+            @endif
+        </div>
+    @endif
 
 </div>
 
@@ -199,15 +213,24 @@
 
                     movies.forEach(movie => {
                         resultsBox.innerHTML += `
-                            <div class="list-group-item">
+                            <a
+                                href="{{ route('movies.index') }}?query=${encodeURIComponent(movie.title)}"
+                                class="list-group-item list-group-item-action"
+                            >
                                 <strong>${movie.title}</strong>
                                 <br>
                                 <small>Release Date: ${movie.release_date}</small>
-                            </div>
+                            </a>
                         `;
                     });
                 });
         }, 400);
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!searchInput.contains(event.target) && !resultsBox.contains(event.target)) {
+            resultsBox.innerHTML = '';
+        }
     });
 
     document.querySelectorAll('.view-details-btn').forEach(button => {

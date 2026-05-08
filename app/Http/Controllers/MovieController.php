@@ -19,6 +19,7 @@ class MovieController extends Controller
     public function index(Request $request)
     {
         $page = (int) $request->get('page', 1);
+        $query = $request->get('query');
 
         if ($page < 1) {
             $page = 1;
@@ -28,7 +29,11 @@ class MovieController extends Controller
             $page = 5;
         }
 
-        $moviesData = $this->tmdbService->getPopularMovies($page);
+        if ($query) {
+            $moviesData = $this->tmdbService->searchMovies($query);
+        } else {
+            $moviesData = $this->tmdbService->getPopularMovies($page);
+        }
 
         $movies = array_slice($moviesData['results'] ?? [], 0, 9);
 
@@ -43,6 +48,7 @@ class MovieController extends Controller
         return view('movies.index', [
             'movies' => $movies,
             'page' => $page,
+            'query' => $query,
             'error' => $moviesData['error'] ?? null,
             'favoriteMovieIds' => $favoriteMovieIds,
         ]);
