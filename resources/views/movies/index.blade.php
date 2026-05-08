@@ -17,13 +17,8 @@
         </a>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('movies.index') }}" class="btn btn-outline-secondary">
-                Movies
-            </a>
-
-            <a href="{{ route('contact') }}" class="btn btn-outline-secondary">
-                Contact
-            </a>
+            <a href="{{ route('movies.index') }}" class="btn btn-outline-secondary">Movies</a>
+            <a href="{{ route('contact') }}" class="btn btn-outline-secondary">Contact</a>
 
             @auth
                 <a href="{{ route('favorites.index') }}" class="btn btn-outline-danger">
@@ -32,14 +27,10 @@
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-dark">
-                        Logout
-                    </button>
+                    <button type="submit" class="btn btn-dark">Logout</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="btn btn-primary">
-                    Login
-                </a>
+                <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
             @endauth
         </div>
     </div>
@@ -48,6 +39,22 @@
 <div class="container py-5">
 
     <h1 class="mb-4 text-center">Popular Movies</h1>
+
+    <div class="mb-4 position-relative">
+        <input
+            type="text"
+            id="movie-search"
+            class="form-control"
+            placeholder="Search for movies..."
+            autocomplete="off"
+        >
+
+        <div
+            id="search-results"
+            class="list-group position-absolute w-100"
+            style="z-index: 1000;"
+        ></div>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success text-center">
@@ -86,6 +93,14 @@
                                 Release Date: {{ $movie['release_date'] ?? 'Unknown' }}
                             </p>
 
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary w-100 mb-2 view-details-btn"
+                                data-movie-id="{{ $movie['id'] }}"
+                            >
+                                View Details
+                            </button>
+
                             <form action="{{ route('favorites.store') }}" method="POST">
                                 @csrf
 
@@ -95,24 +110,13 @@
                                 <input type="hidden" name="release_date" value="{{ $movie['release_date'] ?? '' }}">
 
                                 @if(in_array($movie['id'], $favoriteMovieIds))
-
-                                    <button
-                                        type="button"
-                                        class="btn btn-success w-100"
-                                        disabled
-                                    >
+                                    <button type="button" class="btn btn-success w-100" disabled>
                                         Already Added
                                     </button>
-
                                 @else
-
-                                    <button
-                                        type="submit"
-                                        class="btn btn-outline-danger w-100"
-                                    >
+                                    <button type="submit" class="btn btn-outline-danger w-100">
                                         Add to Favourites
                                     </button>
-
                                 @endif
                             </form>
                         </div>
@@ -138,6 +142,94 @@
     </div>
 
 </div>
+
+<div class="modal fade" id="movieDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="movieModalTitle" class="modal-title">Movie Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>Overview:</strong></p>
+                <p id="movieModalOverview"></p>
+
+                <p><strong>Release Date:</strong> <span id="movieModalRelease"></span></p>
+                <p><strong>Rating:</strong> <span id="movieModalRating"></span></p>
+                <p><strong>Runtime:</strong> <span id="movieModalRuntime"></span></p>
+                <p><strong>Language:</strong> <span id="movieModalLanguage"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const searchInput = document.getElementById('movie-search');
+    const resultsBox = document.getElementById('search-results');
+
+    let timeout = null;
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(timeout);
+
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            resultsBox.innerHTML = '';
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch(`{{ route('movies.search') }}?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(movies => {
+                    resultsBox.innerHTML = '';
+
+                    if (movies.length === 0) {
+                        resultsBox.innerHTML = `
+                            <div class="list-group-item">
+                                No movies found
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    movies.forEach(movie => {
+                        resultsBox.innerHTML += `
+                            <div class="list-group-item">
+                                <strong>${movie.title}</strong>
+                                <br>
+                                <small>Release Date: ${movie.release_date}</small>
+                            </div>
+                        `;
+                    });
+                });
+        }, 400);
+    });
+
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const movieId = this.dataset.movieId;
+
+            fetch(`/movies/${movieId}/details`)
+                .then(response => response.json())
+                .then(movie => {
+                    document.getElementById('movieModalTitle').innerText = movie.title ?? 'Movie Details';
+                    document.getElementById('movieModalOverview').innerText = movie.overview ?? 'No overview available.';
+                    document.getElementById('movieModalRelease').innerText = movie.release_date ?? 'Unknown';
+                    document.getElementById('movieModalRating').innerText = movie.vote_average ?? 'N/A';
+                    document.getElementById('movieModalRuntime').innerText = movie.runtime ? `${movie.runtime} minutes` : 'N/A';
+                    document.getElementById('movieModalLanguage').innerText = movie.original_language ?? 'N/A';
+
+                    const modal = new bootstrap.Modal(document.getElementById('movieDetailsModal'));
+                    modal.show();
+                });
+        });
+    });
+</script>
 
 </body>
 </html>

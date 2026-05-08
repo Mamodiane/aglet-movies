@@ -1,7 +1,5 @@
 <?php
 
-
-
 namespace App\Http\Controllers;
 
 use App\Models\Favorite;
@@ -19,34 +17,65 @@ class MovieController extends Controller
     }
 
     public function index(Request $request)
-{
-    $page = (int) $request->get('page', 1);
+    {
+        $page = (int) $request->get('page', 1);
 
-    if ($page < 1) {
-        $page = 1;
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        if ($page > 5) {
+            $page = 5;
+        }
+
+        $moviesData = $this->tmdbService->getPopularMovies($page);
+
+        $movies = array_slice($moviesData['results'] ?? [], 0, 9);
+
+        $favoriteMovieIds = [];
+
+        if (Auth::check()) {
+            $favoriteMovieIds = Favorite::where('user_id', Auth::id())
+                ->pluck('movie_id')
+                ->toArray();
+        }
+
+        return view('movies.index', [
+            'movies' => $movies,
+            'page' => $page,
+            'error' => $moviesData['error'] ?? null,
+            'favoriteMovieIds' => $favoriteMovieIds,
+        ]);
     }
 
-    if ($page > 5) {
-        $page = 5;
+    public function search(Request $request)
+    {
+        $query = $request->get('query');
+
+        if (!$query) {
+            return response()->json([]);
+        }
+
+        $movies = $this->tmdbService->searchMovies($query);
+
+        return response()->json(
+            collect($movies['results'] ?? [])
+                ->take(5)
+                ->map(function ($movie) {
+                    return [
+                        'id' => $movie['id'],
+                        'title' => $movie['title'] ?? 'Untitled Movie',
+                        'release_date' => $movie['release_date'] ?? 'Unknown',
+                    ];
+                })
+                ->values()
+        );
     }
 
-    $moviesData = $this->tmdbService->getPopularMovies($page);
+    public function details($id)
+    {
+        $movie = $this->tmdbService->getMovieDetails((int) $id);
 
-    $movies = array_slice($moviesData['results'] ?? [], 0, 9);
-
-    $favoriteMovieIds = [];
-
-    if (Auth::check()) {
-        $favoriteMovieIds = Favorite::where('user_id', Auth::id())
-            ->pluck('movie_id')
-            ->toArray();
+        return response()->json($movie);
     }
-
-    return view('movies.index', [
-        'movies' => $movies,
-        'page' => $page,
-        'error' => $moviesData['error'] ?? null,
-        'favoriteMovieIds' => $favoriteMovieIds,
-    ]);
-}
 }

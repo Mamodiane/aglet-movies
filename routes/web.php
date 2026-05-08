@@ -7,11 +7,16 @@ use App\Http\Controllers\FavoriteController;
 Route::get('/', [MovieController::class, 'index'])
     ->name('movies.index');
 
+Route::get('/movies/search', [MovieController::class, 'search'])
+    ->name('movies.search');
+
+Route::get('/movies/{id}/details', [MovieController::class, 'details'])
+    ->name('movies.details');
+    
 Route::view('/contact', 'contact')
     ->name('contact');
 
 Route::middleware('auth')->group(function () {
-
     Route::get('/favorites', [FavoriteController::class, 'index'])
         ->name('favorites.index');
 
@@ -21,5 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/favorites/{favorite}', [FavoriteController::class, 'destroy'])
         ->name('favorites.destroy');
 });
+
 
 require __DIR__.'/auth.php';
