@@ -35,7 +35,7 @@ The application integrates with The Movie Database (TMDB) API to display popular
 ## 1. Clone Repository
 
 ```bash
-git clone YOUR_GITHUB_REPO_LINK
+git clone https://github.com/Mamodiane/aglet-movies.git
 ```
 
 ---
