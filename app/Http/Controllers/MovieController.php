@@ -21,24 +21,29 @@ class MovieController extends Controller
         $page = (int) $request->get('page', 1);
         $query = $request->get('query');
 
+        // Prevent invalid pagination values
         if ($page < 1) {
             $page = 1;
         }
 
+        // Limit movie browsing to first 5 pages
         if ($page > 5) {
             $page = 5;
         }
 
+        // Use TMDB search endpoint when search query is provided
         if ($query) {
             $moviesData = $this->tmdbService->searchMovies($query);
         } else {
             $moviesData = $this->tmdbService->getPopularMovies($page);
         }
 
+        // Limit displayed movies to 9 per page
         $movies = array_slice($moviesData['results'] ?? [], 0, 9);
 
         $favoriteMovieIds = [];
 
+        // Retrieve authenticated user's favourite movie IDs
         if (Auth::check()) {
             $favoriteMovieIds = Favorite::where('user_id', Auth::id())
                 ->pluck('movie_id')
@@ -66,7 +71,10 @@ class MovieController extends Controller
 
         return response()->json(
             collect($movies['results'] ?? [])
+
+                // Limit autocomplete suggestions for cleaner UX
                 ->take(5)
+
                 ->map(function ($movie) {
                     return [
                         'id' => $movie['id'],
@@ -78,6 +86,7 @@ class MovieController extends Controller
         );
     }
 
+    // Return movie details as JSON for the Bootstrap modal popup
     public function details($id)
     {
         $movie = $this->tmdbService->getMovieDetails((int) $id);

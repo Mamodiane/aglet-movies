@@ -42,6 +42,7 @@
         {{ $query ? 'Search Results' : 'Popular Movies' }}
     </h1>
 
+    {{-- Movie search with autocomplete --}}
     <form action="{{ route('movies.index') }}" method="GET" class="mb-4 position-relative">
         <input
             type="text"
@@ -83,6 +84,7 @@
     @if(empty($movies))
         <p class="text-center">No movies found.</p>
     @else
+        {{-- Display movie cards --}}
         <div class="row">
             @foreach($movies as $movie)
                 <div class="col-md-4 mb-4">
@@ -157,6 +159,7 @@
 
 </div>
 
+{{-- Bootstrap modal used for displaying movie details --}}
 <div class="modal fade" id="movieDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -186,6 +189,7 @@
 
     let timeout = null;
 
+    // Fetch autocomplete suggestions while typing
     searchInput.addEventListener('input', function () {
         clearTimeout(timeout);
 
@@ -233,6 +237,7 @@
         }
     });
 
+    // Fetch and display movie details inside modal popup
     document.querySelectorAll('.view-details-btn').forEach(button => {
         button.addEventListener('click', function () {
             const movieId = this.dataset.movieId;
