@@ -19,6 +19,9 @@ The application integrates with The Movie Database (TMDB) API to display popular
 - Contact page
 - Responsive Bootstrap layout
 - Custom SCSS styling improvements
+- Movie search
+- Search autocomplete
+- Movie details popup
 
 ---
 
@@ -381,6 +384,8 @@ A dedicated `TmdbService` class was used to separate external API communication 
 - SCSS-based UI improvements
 - Hover animations and improved card styling
 - Improved navigation UX
+- Search autocomplete
+- Movie details modal popup
 
 ---
 
